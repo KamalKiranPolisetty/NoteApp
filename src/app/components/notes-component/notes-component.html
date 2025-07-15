@@ -13,10 +13,18 @@
   @for(note of Notes(); track note.id)
   {
      <app-note-card
-     [id]="note.id"
-     [title]="note.title"
-     [description]="note.description"
+     [note]="note"
      (edit)="updateNote(note)"
      (delete)="deleteNote(note.id)"></app-note-card>
   }
 </div>
+
+
+<app-note-modal>
+  @if(noteModalOpen())
+  {
+    [note] = "selectedNote()"
+    (submitNote)="onModalSubmit($event)"
+    (cancel)="onModalCancel()"
+  }
+</app-note-modal>
