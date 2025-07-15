@@ -11,11 +11,11 @@ export class NoteService {
 
   constructor(private http: HttpClient) {}
 
-  getNotes(): Observable<Note[]> {
+  getAllNotes(): Observable<Note[]> {
     return this.http.get<Note[]>(this.apiUrl);
   }
 
-  addNote(note: Note): Observable<Note> {
+  addNote(note: Omit<Note, 'id'>): Observable<Note> {
     return this.http.post<Note>(`${this.apiUrl}/add-note`, note);
   }
 

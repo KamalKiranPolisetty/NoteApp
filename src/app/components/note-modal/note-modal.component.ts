@@ -8,252 +8,110 @@ import { Note } from '../../models/note.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="modal-backdrop" (click)="onCancel()">
+    <div class="modal-overlay" (click)="onClose()" *ngIf="isOpen">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>{{ isEdit ? 'Edit Note' : 'Add New Note' }}</h2>
-          <button class="close-btn" (click)="onCancel()">×</button>
+          <h2>{{ isEditing ? 'Edit Note' : 'Create New Note' }}</h2>
+          <button class="close-btn" (click)="onClose()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         
         <form (ngSubmit)="onSubmit()" #noteForm="ngForm">
           <div class="form-group">
             <label for="title">Title</label>
-            <input
-              type="text"
-              id="title"
+            <input 
+              type="text" 
+              id="title" 
               name="title"
-              [(ngModel)]="noteData.title"
+              [(ngModel)]="noteData.title" 
               required
-              maxlength="100"
-              placeholder="Enter note title..."
               #titleInput="ngModel"
+              placeholder="Enter note title..."
             >
-            <div class="error" *ngIf="titleInput.invalid && titleInput.touched">
+            <div class="error-message" *ngIf="titleInput.invalid && titleInput.touched">
               Title is required
             </div>
           </div>
-
+          
           <div class="form-group">
             <label for="description">Description</label>
-            <textarea
-              id="description"
+            <textarea 
+              id="description" 
               name="description"
-              [(ngModel)]="noteData.description"
+              [(ngModel)]="noteData.description" 
               required
+              #descriptionInput="ngModel"
               rows="6"
               placeholder="Enter note description..."
-              #descInput="ngModel"
             ></textarea>
-            <div class="error" *ngIf="descInput.invalid && descInput.touched">
+            <div class="error-message" *ngIf="descriptionInput.invalid && descriptionInput.touched">
               Description is required
             </div>
           </div>
-
+          
           <div class="modal-actions">
-            <button type="button" class="btn btn-cancel" (click)="onCancel()">
+            <button type="button" class="btn btn-secondary" (click)="onClose()">
               Cancel
             </button>
             <button type="submit" class="btn btn-primary" [disabled]="noteForm.invalid">
-              {{ isEdit ? 'Update' : 'Create' }} Note
+              {{ isEditing ? 'Update' : 'Create' }} Note
             </button>
           </div>
         </form>
       </div>
     </div>
   `,
-  styles: [`
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-      animation: modalSlideIn 0.3s ease-out;
-    }
-
-    @keyframes modalSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2rem 2rem 1rem 2rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 2rem;
-      color: #6b7280;
-      cursor: pointer;
-      padding: 0;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-    }
-
-    .close-btn:hover {
-      background-color: #f3f4f6;
-      color: #374151;
-    }
-
-    form {
-      padding: 2rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: #374151;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-family: inherit;
-      transition: border-color 0.2s ease;
-      box-sizing: border-box;
-    }
-
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    .error {
-      color: #ef4444;
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      min-width: 100px;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn-cancel {
-      background-color: #f3f4f6;
-      color: #374151;
-    }
-
-    .btn-cancel:hover:not(:disabled) {
-      background-color: #e5e7eb;
-    }
-
-    .btn-primary {
-      background-color: #3b82f6;
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background-color: #2563eb;
-      transform: translateY(-1px);
-    }
-  `]
+  styleUrls: ['./note-modal.component.scss']
 })
 export class NoteModalComponent implements OnInit {
+  @Input() isOpen = false;
   @Input() note: Note | null = null;
-  @Output() save = new EventEmitter<Note>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<Omit<Note, 'id'> | Note>();
 
-  noteData: Note = {
-    id: 0,
+  noteData: Omit<Note, 'id'> = {
     title: '',
     description: ''
   };
 
-  get isEdit(): boolean {
+  get isEditing(): boolean {
     return this.note !== null;
   }
 
   ngOnInit() {
     if (this.note) {
-      this.noteData = { ...this.note };
-    } else {
       this.noteData = {
-        id: 0,
-        title: '',
-        description: ''
+        title: this.note.title,
+        description: this.note.description
       };
     }
   }
 
-  onSubmit() {
-    if (this.noteData.title.trim() && this.noteData.description.trim()) {
-      this.save.emit(this.noteData);
-    }
+  onClose() {
+    this.close.emit();
+    this.resetForm();
   }
 
-  onCancel() {
-    this.cancel.emit();
+  onSubmit() {
+    if (this.isEditing && this.note) {
+      this.save.emit({
+        ...this.note,
+        ...this.noteData
+      });
+    } else {
+      this.save.emit(this.noteData);
+    }
+    this.onClose();
+  }
+
+  private resetForm() {
+    this.noteData = {
+      title: '',
+      description: ''
+    };
   }
 }

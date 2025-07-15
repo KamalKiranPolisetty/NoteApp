@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { NoteService } from './services/note.service';
 import { NoteCardComponent } from './components/note-card/note-card.component';
 import { NoteModalComponent } from './components/note-modal/note-modal.component';
@@ -10,357 +10,115 @@ import { Note } from './models/note.model';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, NoteCardComponent, NoteModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    HttpClientModule, 
+    NoteCardComponent, 
+    NoteModalComponent
+  ],
   template: `
     <div class="app-container">
-      <!-- Header -->
-      <header class="header">
+      <header class="app-header">
         <div class="header-content">
-          <div class="logo">
-            <span class="logo-icon">📝</span>
-            <h1>NotesApp</h1>
+          <h1 class="app-title">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+            My Notes
+          </h1>
+          <div class="header-actions">
+            <div class="search-container">
+              <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Search notes..." 
+                class="search-input"
+                [(ngModel)]="searchTerm"
+                (input)="filterNotes()"
+              >
+            </div>
+            <button class="add-btn" (click)="openModal()" title="Create new note">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New Note
+            </button>
           </div>
-          <button class="add-btn" (click)="openAddModal()">
-            <span class="plus-icon">+</span>
-            Add Note
-          </button>
         </div>
       </header>
 
-      <!-- Main Content -->
       <main class="main-content">
-        <!-- Search Bar -->
-        <div class="search-container">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search notes..."
-              [(ngModel)]="searchTerm"
-              (input)="filterNotes()"
-              class="search-input"
-            >
+        <div class="notes-container" *ngIf="!loading">
+          <div class="notes-grid" *ngIf="filteredNotes.length > 0">
+            <app-note-card 
+              *ngFor="let note of filteredNotes" 
+              [note]="note"
+              (edit)="editNote($event)"
+              (delete)="deleteNote($event)"
+            ></app-note-card>
           </div>
-        </div>
-
-        <!-- Notes Stats -->
-        <div class="stats">
-          <p class="stats-text">
-            {{ filteredNotes.length }} {{ filteredNotes.length === 1 ? 'note' : 'notes' }}
-            {{ searchTerm ? 'found' : 'total' }}
-          </p>
-        </div>
-
-        <!-- Notes Grid -->
-        <div class="notes-grid" *ngIf="filteredNotes.length > 0; else emptyState">
-          <app-note-card
-            *ngFor="let note of filteredNotes; trackBy: trackByNoteId"
-            [note]="note"
-            (edit)="openEditModal($event)"
-            (delete)="deleteNote($event)"
-          ></app-note-card>
-        </div>
-
-        <!-- Empty State -->
-        <ng-template #emptyState>
-          <div class="empty-state">
-            <div class="empty-icon">{{ searchTerm ? '🔍' : '📝' }}</div>
-            <h3>{{ searchTerm ? 'No notes found' : 'No notes yet' }}</h3>
-            <p>{{ searchTerm ? 'Try adjusting your search terms' : 'Create your first note to get started' }}</p>
-            <button *ngIf="!searchTerm" class="btn btn-primary" (click)="openAddModal()">
-              Create First Note
+          
+          <div class="empty-state" *ngIf="filteredNotes.length === 0 && notes.length === 0">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+            </svg>
+            <h3>No notes yet</h3>
+            <p>Create your first note to get started</p>
+            <button class="btn btn-primary" (click)="openModal()">
+              Create Note
             </button>
           </div>
-        </ng-template>
 
-        <!-- Loading State -->
-        <div class="loading" *ngIf="loading">
+          <div class="empty-state" *ngIf="filteredNotes.length === 0 && notes.length > 0">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <h3>No notes found</h3>
+            <p>Try adjusting your search terms</p>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="loading">
           <div class="spinner"></div>
           <p>Loading notes...</p>
         </div>
       </main>
 
-      <!-- Modal -->
       <app-note-modal
-        *ngIf="showModal"
+        [isOpen]="isModalOpen"
         [note]="selectedNote"
+        (close)="closeModal()"
         (save)="saveNote($event)"
-        (cancel)="closeModal()"
       ></app-note-modal>
 
-      <!-- Toast Notifications -->
-      <div class="toast" *ngIf="toastMessage" [class.show]="showToast">
+      <div class="toast" [class.show]="showToast" [class.error]="toastType === 'error'">
         {{ toastMessage }}
       </div>
     </div>
   `,
-  styles: [`
-    .app-container {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .header {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 1rem 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .logo-icon {
-      font-size: 2rem;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-radius: 12px;
-      width: 3rem;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-
-    .logo h1 {
-      margin: 0;
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #1f2937;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .add-btn {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-
-    .add-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .plus-icon {
-      font-size: 1.25rem;
-      font-weight: 300;
-    }
-
-    .main-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .search-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-
-    .search-box {
-      position: relative;
-      width: 100%;
-      max-width: 500px;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.25rem;
-      color: #6b7280;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 1rem 1rem 1rem 3rem;
-      border: none;
-      border-radius: 50px;
-      font-size: 1rem;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      box-sizing: border-box;
-    }
-
-    .search-input:focus {
-      outline: none;
-      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .stats {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .stats-text {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .notes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
-      margin: 2rem auto;
-    }
-
-    .empty-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-      opacity: 0.7;
-    }
-
-    .empty-state h3 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #374151;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .empty-state p {
-      color: #6b7280;
-      margin: 0 0 2rem 0;
-      font-size: 1rem;
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-
-    .loading {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .spinner {
-      width: 3rem;
-      height: 3rem;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #10b981;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s ease;
-      z-index: 1000;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-      .header-content {
-        padding: 0 1rem;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .main-content {
-        padding: 1rem;
-      }
-
-      .notes-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .logo h1 {
-        font-size: 1.5rem;
-      }
-    }
-  `]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   notes: Note[] = [];
   filteredNotes: Note[] = [];
-  searchTerm: string = '';
-  showModal: boolean = false;
+  searchTerm = '';
+  loading = false;
+  isModalOpen = false;
   selectedNote: Note | null = null;
-  loading: boolean = false;
-  toastMessage: string = '';
-  showToast: boolean = false;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
 
   constructor(private noteService: NoteService) {}
 
@@ -370,16 +128,16 @@ export class AppComponent implements OnInit {
 
   loadNotes() {
     this.loading = true;
-    this.noteService.getNotes().subscribe({
+    this.noteService.getAllNotes().subscribe({
       next: (notes) => {
         this.notes = notes;
         this.filterNotes();
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading notes:', error);
+        console.error('Error fetching notes:', error);
+        this.showToastMessage('Error loading notes', 'error');
         this.loading = false;
-        this.showToastMessage('Error loading notes');
       }
     });
   }
@@ -396,82 +154,74 @@ export class AppComponent implements OnInit {
     }
   }
 
-  openAddModal() {
+  openModal() {
     this.selectedNote = null;
-    this.showModal = true;
+    this.isModalOpen = true;
   }
 
-  openEditModal(note: Note) {
+  editNote(note: Note) {
     this.selectedNote = note;
-    this.showModal = true;
+    this.isModalOpen = true;
   }
 
   closeModal() {
-    this.showModal = false;
+    this.isModalOpen = false;
     this.selectedNote = null;
   }
 
-  saveNote(noteData: Note) {
-    if (this.selectedNote) {
+  saveNote(noteData: Omit<Note, 'id'> | Note) {
+    if ('id' in noteData) {
       // Update existing note
-      this.noteService.updateNote(noteData).subscribe({
+      this.noteService.updateNote(noteData as Note).subscribe({
         next: (updatedNote) => {
           const index = this.notes.findIndex(n => n.id === updatedNote.id);
           if (index !== -1) {
             this.notes[index] = updatedNote;
             this.filterNotes();
           }
-          this.closeModal();
           this.showToastMessage('Note updated successfully');
         },
         error: (error) => {
           console.error('Error updating note:', error);
-          this.showToastMessage('Error updating note');
+          this.showToastMessage('Error updating note', 'error');
         }
       });
     } else {
-      // Add new note
+      // Create new note
       this.noteService.addNote(noteData).subscribe({
         next: (newNote) => {
-          this.notes.push(newNote);
+          this.notes.unshift(newNote);
           this.filterNotes();
-          this.closeModal();
           this.showToastMessage('Note created successfully');
         },
         error: (error) => {
-          console.error('Error creating note:', error);
-          this.showToastMessage('Error creating note');
+          console.error('Error adding note:', error);
+          this.showToastMessage('Error creating note', 'error');
         }
       });
     }
   }
 
-  deleteNote(noteId: number) {
-    this.noteService.deleteNote(noteId).subscribe({
+  deleteNote(id: number) {
+    this.noteService.deleteNote(id).subscribe({
       next: () => {
-        this.notes = this.notes.filter(note => note.id !== noteId);
+        this.notes = this.notes.filter(note => note.id !== id);
         this.filterNotes();
         this.showToastMessage('Note deleted successfully');
       },
       error: (error) => {
         console.error('Error deleting note:', error);
-        this.showToastMessage('Error deleting note');
+        this.showToastMessage('Error deleting note', 'error');
       }
     });
   }
 
-  trackByNoteId(index: number, note: Note): number {
-    return note.id;
-  }
-
-  private showToastMessage(message: string) {
+  private showToastMessage(message: string, type: 'success' | 'error' = 'success') {
     this.toastMessage = message;
+    this.toastType = type;
     this.showToast = true;
     setTimeout(() => {
       this.showToast = false;
-      setTimeout(() => {
-        this.toastMessage = '';
-      }, 300);
     }, 3000);
   }
 }
