@@ -1,30 +1,49 @@
-<div class="search-container">
-  <input
-    type="search"
-    class="search-input"
-    placeholder="🔍 Search"
-    aria-label="Search Notes"
-  >
-</div>
+<div class="notes-container">
+  <div class="search-container">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="🔍 Search notes..."
+      aria-label="Search Notes"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    >
+  </div>
 
-<h1 class="title">Notes</h1>
+  <div class="header-section">
+    <h1 class="title">My Notes</h1>
+    <p class="subtitle">{{ filteredNotes().length }} {{ filteredNotes().length === 1 ? 'note' : 'notes' }}</p>
+  </div>
 
-<div class="notecards">
-  @for(note of Notes(); track note.id)
-  {
-     <app-note-card
-     [note]="note"
-     (edit)="updateNote(note)"
-     (delete)="deleteNote(note.id)"></app-note-card>
+  <div class="notecards" [class.empty]="filteredNotes().length === 0">
+    @if (filteredNotes().length === 0 && searchTerm()) {
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No notes found</h3>
+        <p>Try adjusting your search terms</p>
+      </div>
+    } @else if (filteredNotes().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>No notes yet</h3>
+        <p>Click the + button to create your first note</p>
+      </div>
+    } @else {
+      @for(note of filteredNotes(); track note.id) {
+        <app-note-card
+          [note]="note"
+          (edit)="openEdit(note)"
+          (delete)="deleteNote($event)">
+        </app-note-card>
+      }
+    }
+  </div>
+
+  @if(noteModalOpen()) {
+    <app-note-modal
+      [note]="selectedNote()"
+      (submitNote)="onModalSubmit($event)"
+      (cancel)="onModalCancel()">
+    </app-note-modal>
   }
 </div>
-
-
-<app-note-modal>
-  @if(noteModalOpen())
-  {
-    [note] = "selectedNote()"
-    (submitNote)="onModalSubmit($event)"
-    (cancel)="onModalCancel()"
-  }
-</app-note-modal>
