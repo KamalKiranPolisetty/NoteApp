@@ -10,7 +10,7 @@ import { Note } from '../../model/Note.model';
 })
 export class NoteCard {
 
-  note = input<Note>();
+  note = input.required<Note>();
 
   edit = output<Note>();
   delete = output<number>();

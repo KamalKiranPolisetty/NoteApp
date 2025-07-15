@@ -7,6 +7,7 @@ import { NoteModal } from '../note-modal/note-modal';
 
 @Component({
   selector: 'app-notes-component',
+  standalone: true,
   imports: [NoteCard, NoteModal],
   templateUrl: './notes-component.html',
   styleUrl: './notes-component.scss',
