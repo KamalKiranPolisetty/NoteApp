@@ -1,0 +1,34 @@
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 5rem;
+}
+
+.title{
+  margin: 5rem;
+  font-weight: 500;
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.notecards{
+  display: flex;
+  flex-wrap: wrap;
+  margin: 3rem;
+}
+
+.search-input {
+  width: 800px;
+  max-width: 1000px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 3rem;
+  font-size: 1rem;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-input:focus {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}

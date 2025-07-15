@@ -1,0 +1,22 @@
+<div class="search-container">
+  <input
+    type="search"
+    class="search-input"
+    placeholder="🔍 Search"
+    aria-label="Search Notes"
+  >
+</div>
+
+<h1 class="title">Notes</h1>
+
+<div class="notecards">
+  @for(note of Notes(); track note.id)
+  {
+     <app-note-card
+     [id]="note.id"
+     [title]="note.title"
+     [description]="note.description"
+     (edit)="updateNote(note)"
+     (delete)="deleteNote(note.id)"></app-note-card>
+  }
+</div>

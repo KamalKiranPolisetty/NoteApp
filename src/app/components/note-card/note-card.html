@@ -1,0 +1,12 @@
+<div class="note-card">
+  <h2 class="note-title">{{ note()?.title }}</h2>
+  <p class="note-content">{{ note()?.description }}</p>
+
+  <div class="note-actions">
+    <button class="button edit" (click)="onEditNote()">Edit</button>
+    <button class="button delete" (click)="onDeleteNote()">Delete</button>
+  </div>
+
+</div>
+
+

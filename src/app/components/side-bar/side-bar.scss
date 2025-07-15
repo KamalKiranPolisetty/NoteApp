@@ -1,0 +1,36 @@
+.side-bar
+{
+  width: 5rem;
+  height: 100vh;
+  background-color: white;
+  padding: 20px;
+  border-right: 2px solid lightgray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h2{
+  font-size: 1.3rem;
+  color: black;
+  margin-bottom: 5rem;
+  text-align: center;        /* Center the title text */
+  font-weight: 500;          /* Medium weight for better visibility */
+}
+
+.add-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 2rem;            /* Use rem instead of px for scalability */
+  font-weight: 300;           /* Light weight for thinner '+' */
+  line-height: 1;             /* Ensures no extra spacing above/below */
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 2px;        /* Optional tweak to nudge '+' visually to center */
+}
